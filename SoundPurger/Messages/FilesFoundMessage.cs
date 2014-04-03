@@ -9,11 +9,8 @@ namespace SoundPurger.Messages
 {
     class FilesFoundMessage : IMessage
     {
-        public FileInfo[] Files { get; set; }
-
-        public FilesFoundMessage(FileInfo[] files)
+        public FilesFoundMessage()
         {
-            Files = files;
         }
     }
 }

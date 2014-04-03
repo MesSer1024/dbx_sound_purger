@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\DatakeyCrawler\recent_build\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -53,6 +56,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\DeleteReference.cs" />
+    <Compile Include="SavedData.cs" />
+    <Compile Include="WpfUtils.cs" />
     <Page Include="HierarchyPresenter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -66,9 +72,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppSettings.cs" />
-    <Compile Include="Commands\BuildAssets.cs" />
+    <Compile Include="Commands\AssetBuilder.cs" />
     <Compile Include="Commands\BuildHierarchyTree.cs" />
+    <Compile Include="Commands\PopulateSoundDbxFiles.cs" />
     <Compile Include="Commands\PopulateDbxFiles.cs" />
+    <Compile Include="DictionaryList.cs" />
     <Compile Include="HierarchyPresenter.xaml.cs">
       <DependentUpon>HierarchyPresenter.xaml</DependentUpon>
     </Compile>

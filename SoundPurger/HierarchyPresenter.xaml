@@ -3,21 +3,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SoundPurger"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="2" />
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="2" />
-            <ColumnDefinition Width="1*" />
-        </Grid.ColumnDefinitions>
-        <Border Grid.Column="1" Background="Black" />
-        <Border Grid.Column="3" Background="Black" />
-
-        <ListBox Name="_parents" Grid.Column="0" />
-        <ListBox Name="_items" Grid.Column="2" />
-        <ListBox Name="_children" Grid.Column="4" />
-    </Grid>
+    <DockPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="2" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="2" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            <Border Grid.Column="1" Background="Black" />
+            <Border Grid.Column="3" Background="Black" />
+            
+            <Label HorizontalAlignment="Center">Parents</Label>
+            <Label HorizontalAlignment="Center" Grid.Column="2">Items</Label>
+            <Label HorizontalAlignment="Center" Grid.Column="4">Children</Label>
+            
+            <ListBox Name="_parents" Grid.Column="0" Grid.Row ="1" DisplayMemberPath="VisibleName" />
+            <ListBox Name="_items" Grid.Column="2" Grid.Row ="1" DisplayMemberPath="VisibleName">
+                <ListBox.DataContext>
+                    <local:DiceAsset />
+                </ListBox.DataContext>
+            </ListBox>
+            <ListBox Name="_children" Grid.Column="4" Grid.Row ="1" DisplayMemberPath="VisibleName" />
+        </Grid>
+    </DockPanel>
 </UserControl>

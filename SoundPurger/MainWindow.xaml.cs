@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using SoundPurger.Messages;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace SoundPurger
 {
@@ -25,7 +27,8 @@ namespace SoundPurger
         {
             InitializeComponent();
             MessageManager.addListener(this);
-            AppSettings.Folder = @"E:\repositories\Tunguska\Data\Source\Sound";
+            AppSettings.RootFolder = @"E:\repositories\Tunguska\Data";
+            WpfUtils.MainDispatcher = this.Dispatcher;
             _content.Children.Add(new Populate());
         }
 
@@ -39,7 +42,8 @@ namespace SoundPurger
                 var ui = new HierarchyPresenter();
                 _content.Children.Clear();
                 _content.Children.Add(ui);
-                ui.populate(foo.Files);
+
+                ui.populate(AppSettings.FilesToRemove);
             }
         }
 

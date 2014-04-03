@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace SoundPurger
 {
-    static class AppSettings
+    class SavedData
     {
-        public static string RootFolder { get; set; }
-        public static FileInfo[] FilesToRemove { get; set; }
+        public List<FileInfo> RemovableFiles { get; set; }
+        public Dictionary<string, DiceAsset> AllAssets { get; set; }
     }
 }
