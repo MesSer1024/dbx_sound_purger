@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -59,6 +60,10 @@ namespace SoundPurger.Commands
         private void deleteGuidFromAssets(string guid, List<DiceAsset> assets)
         {
             var originalAsset = AssetBuilder.AllAssets[guid];
+            var isSoundPatchConfigurationAsset = originalAsset.Type == "Audio.SoundPatchConfigurationAsset";
+
+
+
             foreach(var asset in assets)
             {
                 var file = new FileInfo(asset.FilePath);
@@ -66,35 +71,24 @@ namespace SoundPurger.Commands
                 if (!file.Exists || file.IsReadOnly)
                     throw new Exception();
 
-                var lines = File.ReadAllLines(asset.FilePath).ToList();
+                var lines = File.ReadAllLines(asset.FilePath).ToList().AsReadOnly();
 
                 switch(asset.Type)
                 {
-                    case "Entity.LogicPrefabBlueprint":
-                        modifyLogicPrefab(ref lines, guid, asset);
-                        break;
                     case "Entity.EffectBlueprint":
                         modifyEffectBlueprint(ref lines, guid, asset);
                         break;
                     default:
-                        modifyLogicPrefab(ref lines, guid, asset);
+                        if (isSoundPatchConfigurationAsset)
+                            modifySPC_asset(ref lines, guid, asset);
+                        else
+                            modifyAsset(ref lines, guid, asset);
                         break;
                 }
-
-                //output modified version to file
-                var sb = new StringBuilder();
-                lines.ForEach(a => sb.AppendLine(a));
-                using (var sw = new StreamWriter(asset.FilePath, false, Encoding.UTF8))
-                {
-                    sw.Write(sb.ToString());
-                    sw.Flush();
-                    sw.Close();
-                }
-
             }
         }
 
-        private void modifyLogicPrefab(ref List<string> lines, string guid, DiceAsset asset)
+        private void modifySPC_asset(ref ReadOnlyCollection<string> lines, string guid, DiceAsset asset)
         {
             var indexesToRemove = new List<int>();
 
@@ -120,22 +114,20 @@ namespace SoundPurger.Commands
                     if (parentIsSpecialCaseInstance)
                     {
                         int firstNonWhitespaceIndex = line.IndexOf<char>(c => !char.IsWhiteSpace(c));
-                        lines[i] = line.Substring(0, firstNonWhitespaceIndex) + Replacement_SoundPatchConfigurationAsset;
+                        asset.replaceLine(i, line.Substring(0, firstNonWhitespaceIndex) + Replacement_SoundPatchConfigurationAsset);
                     }
                     else
-                        indexesToRemove.Add(i);
+                        asset.removeLine(i);
                 }
-            }
-
-            //remove all tagged lines - from end, to make it easier by not offsetting indexes
-            for (int i = indexesToRemove.Count - 1; i >= 0; --i)
-            {
-                AppSettings.writeModification(String.Format("Removed line {0} from file {1} due to asset[guid:{2}, name:{3}", lines[indexesToRemove[i]], asset.FilePath, asset.Guid, asset.VisibleName));
-                lines.RemoveAt(indexesToRemove[i]);
             }
         }
 
-        private void modifyEffectBlueprint(ref List<string> lines, string guid, DiceAsset asset)
+        private void modifyAsset(ref ReadOnlyCollection<string> lines, string guid, DiceAsset asset)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void modifyEffectBlueprint(ref ReadOnlyCollection<string> lines, string guid, DiceAsset asset)
         {
             var linesToRemove = new List<int>();
             
@@ -154,47 +146,37 @@ namespace SoundPurger.Commands
             {
                 for (int i = linesToRemove.Count - 1; i >= 0; --i )
                 {
-                    var idx = linesToRemove[i];
-                    string prevLine2 = lines[idx - 2];
-                    string prevLine = lines[idx - 1];
-                    string nextLine = lines[idx + 1];
+                    int nxtCounter, prvCounter, idx;
+                    nxtCounter = prvCounter = idx = linesToRemove[i];
+                    string prevLine, nextLine;
 
                     //verify that our assumptions are correct in regards to item
-                    if (prevLine.Contains("Audio.SoundEffectEntityData") && nextLine.Contains("/instance>"))
+                    while (true)
                     {
-                        var regex = new Regex("guid=\"([0-9a-f-]+)\"", RegexOptions.Singleline);
-                        var match = regex.Match(prevLine);
-                        if (!match.Success)
-                            throw new Exception();
-                        var foo = match.Groups[1];
-
-                        AppSettings.writeModification(String.Format("Removed line {0} from file {1} due to asset[guid:{2}, name:{3}", lines[idx], asset.FilePath, asset.Guid, asset.VisibleName));
-                        lines.RemoveAt(idx + 1);
-                        lines.RemoveAt(idx);
-                        lines.RemoveAt(idx - 1);
-
-                        AppSettings.writeModification(String.Format("Also tagging following guid={0} as removable due to it being only child...", foo.Value));
-                        extraRemovableGuids.Add(foo.Value);
+                        nextLine = lines[++nxtCounter];
+                        if(nextLine.Contains("/instance>"))
+                            break;
                     }
-                    else if (prevLine2.Contains("Audio.SoundEffectEntityData") && nextLine.Contains("/instance>"))
+
+                    while (true)
                     {
-                        var regex = new Regex("guid=\"([0-9a-f-]+)\"", RegexOptions.Singleline);
-                        var match = regex.Match(prevLine2);
-                        if (!match.Success)
-                            throw new Exception();
-                        var foo = match.Groups[1];
-
-                        AppSettings.writeModification(String.Format("Removed line {0} from file {1} due to asset[guid:{2}, name:{3}", lines[idx], asset.FilePath, asset.Guid, asset.VisibleName));
-                        lines.RemoveAt(idx + 1);
-                        lines.RemoveAt(idx);
-                        lines.RemoveAt(idx - 1);
-                        lines.RemoveAt(idx - 2);
-
-                        AppSettings.writeModification(String.Format("Also tagging following guid={0} as removable due to it being only child...", foo.Value));
-                        extraRemovableGuids.Add(foo.Value);
+                        prevLine = lines[--prvCounter];
+                        if(prevLine.Contains("Audio.SoundEffectEntityData"))
+                            break;
                     }
-                    else
+
+
+                    var regex = new Regex("guid=\"([0-9a-f-]+)\"", RegexOptions.Singleline);
+                    var match = regex.Match(prevLine);
+                    if (!match.Success)
                         throw new Exception();
+                    var foo = match.Groups[1];
+
+                    AppSettings.writeModification(String.Format("Removed line {0} from file {1} due to asset[guid:{2}, name:{3}", lines[idx], asset.FilePath, asset.Guid, asset.VisibleName));
+                    asset.removeLines(prvCounter, nxtCounter);
+
+                    AppSettings.writeModification(String.Format("Also tagging following guid={0} as removable due to it being only child...", foo.Value));
+                    extraRemovableGuids.Add(foo.Value);
                 }
             }
 
@@ -207,7 +189,7 @@ namespace SoundPurger.Commands
                     var extraGuid = extraRemovableGuids[j];
                     if (line.Contains(extraGuid))
                     {
-                        lines.RemoveAt(i);
+                        asset.removeLine(i);
                         break;
                     }
                 }

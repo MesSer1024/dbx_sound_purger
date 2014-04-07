@@ -52,6 +52,7 @@ namespace SoundPurger
                         }
                     }
 
+                    AppSettings.outputFiles();
                     AppSettings.writeLogToFileAndClear(new System.IO.FileInfo("./output/foobar.txt"));
                 }
 
@@ -71,7 +72,7 @@ namespace SoundPurger
 
             //identifiersList.ItemsSource = _items.FindAll(a => a.Guid.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
             //_items.ItemsSource = _removableFiles;
-            _subset = _removableFiles.FindAll(a => a.Type == "Audio.SoundPatchConfigurationAsset" || a.Type == "Audio.SoundPatchAsset" || a.Type == "Audio.SoundWaveAsset");
+            _subset = _removableFiles.FindAll(a => a.Type == "Audio.SoundPatchConfigurationAsset" /*|| a.Type == "Audio.SoundPatchAsset" || a.Type == "Audio.SoundWaveAsset"*/);
             _items.ItemsSource = _subset;
         }
 

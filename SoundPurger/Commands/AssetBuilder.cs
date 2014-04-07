@@ -17,12 +17,11 @@ namespace SoundPurger
         public string Name { get; set; }
         public string Type { get; set; }
 
-        private object _fileLock = new object();
-
-        public IReadOnlyCollection<string> FileContent { get; set; }
-
         public List<string> Parents { get; set; }
         public List<string> Children { get; set; }
+
+        private List<int> _removedLines;
+        private Dictionary<int, string> _changedLines;
 
         public string VisibleName
         {
@@ -33,6 +32,8 @@ namespace SoundPurger
         {
             Parents = new List<string>();
             Children = new List<string>();
+            _removedLines = new List<int>();
+            _changedLines = new Dictionary<int, string>();
         }
 
         public bool addChildUnique(DiceAsset asset)
@@ -53,12 +54,58 @@ namespace SoundPurger
 
         public void removeLine(int line)
         {
+            if (!_removedLines.Contains(line))
+            {
+                _removedLines.Add(line);
+            }
+        }
 
+        internal void removeLines(int startIndex, int endIndex)
+        {
+            for (int i = startIndex; i <= endIndex; ++i)
+            {
+                removeLine(i);
+            }
         }
 
         public void replaceLine(int line, string content)
         {
+            _changedLines.Add(line, content);
+        }
 
+        public void writeChanges()
+        {
+            if (_removedLines.Count == 0 && _changedLines.Count == 0)
+                return;
+
+            //assert that we are not about to change and modify same line
+            _removedLines.ForEach(a =>
+                { if (_changedLines.ContainsKey(a)) throw new Exception(); }
+            );
+
+            var lines = File.ReadAllLines(FilePath).ToList();
+
+            foreach (var pair in _changedLines)
+            {
+                lines[pair.Key] = pair.Value;
+            }
+
+            _removedLines = _removedLines.OrderByDescending(a => a).ToList();
+            for (int i = 0; i < _removedLines.Count; ++i)
+                lines.RemoveAt(_removedLines[i]);
+
+            //output modified version to file
+            var sb = new StringBuilder();
+            lines.ForEach(a => sb.AppendLine(a));
+            using (var sw = new StreamWriter(FilePath, false, Encoding.UTF8))
+            {
+                sw.Write(sb.ToString());
+                sw.Flush();
+                sw.Close();
+            }
+
+            _removedLines.Clear();
+            _changedLines.Clear();
         }
     }
 

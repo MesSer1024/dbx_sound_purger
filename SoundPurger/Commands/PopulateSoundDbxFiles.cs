@@ -20,6 +20,12 @@ namespace SoundPurger.Commands
             Files = new List<FileInfo>();
 
             _soundFolder = Path.Combine(AppSettings.RootFolder, @"./Source/Sound");
+
+            //folders to keep
+                //Core
+                //StreamPools
+                //Test
+
             SoundFoldersToRemove = new DirectoryInfo[] {
                         new DirectoryInfo(Path.Combine(_soundFolder, "BulletCraft")),
                         new DirectoryInfo(Path.Combine(_soundFolder, "Bullet_Craft")),
@@ -34,7 +40,6 @@ namespace SoundPurger.Commands
                         new DirectoryInfo(Path.Combine(_soundFolder, "Music")),
                         new DirectoryInfo(Path.Combine(_soundFolder, "Objects")),
                         new DirectoryInfo(Path.Combine(_soundFolder, "States")),
-                        //new DirectoryInfo(Path.Combine(_soundFolder, "StreamPools")),
                         new DirectoryInfo(Path.Combine(_soundFolder, "UI")),
                         new DirectoryInfo(Path.Combine(_soundFolder, "Vehicles")),
                         new DirectoryInfo(Path.Combine(_soundFolder, "VO_Radio_Effects_Waves")),

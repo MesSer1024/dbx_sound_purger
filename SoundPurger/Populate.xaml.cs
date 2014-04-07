@@ -42,16 +42,43 @@ namespace SoundPurger
             if (!file.Exists)
                 throw new Exception("Invalid file!");
 
-            using (var sr = new StreamReader(file.FullName))
+            var load = JsonConvert.DeserializeObject<SavedData>(File.ReadAllText(file.FullName));
+            AppSettings.FilesToRemove = load.RemovableFiles.ToArray();
+            //all files loaded have TWO instances of each DiceAsset
+            var dic = new Dictionary<string, DiceAsset>();
+            foreach (var pair in load.AllAssets)
             {
-                string s = sr.ReadToEnd();
-                var load = JsonConvert.DeserializeObject<SavedData>(s);
-                AppSettings.FilesToRemove = load.RemovableFiles.ToArray();
-                AssetBuilder.AllAssets = load.AllAssets;
-                sr.Close();
+                bool containsGuid = dic.ContainsKey(pair.Value.Guid);
+                bool containsPath = dic.ContainsKey(pair.Value.FilePath);
+
+                if (containsPath != containsGuid)
+                {
+                    throw new Exception();
+                }
+                if (containsGuid == false && containsPath == false)
+                {
+                    dic.Add(pair.Value.Guid, pair.Value);
+                    dic.Add(pair.Value.FilePath, pair.Value);
+                }
             }
 
+            AssetBuilder.AllAssets = dic;
             MessageManager.sendMessage(new FilesFoundMessage());
+        }
+
+        private List<DiceAsset> buildAssets(DictionaryList<FileInfo> AssetUsedInFiles)
+        {
+            var val = new List<DiceAsset>(AssetUsedInFiles.Count);
+
+            foreach (var item in AssetUsedInFiles)
+            {
+                foreach (var file in item.Value)
+                {
+                    var asset = AssetBuilder.buildAsset(file);
+                    val.Add(asset);
+                }
+            }
+            return val;
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)

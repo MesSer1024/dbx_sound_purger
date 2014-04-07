@@ -14,12 +14,12 @@ namespace SoundPurger
 
         internal static void addModifiedFile(FileInfo file)
         {
-            if (!_modifiedFiles.Contains(file))
-                _modifiedFiles.Add(file);
+            if (!_modifiedFiles.ContainsKey(file.FullName))
+                _modifiedFiles.Add(file.FullName, file);
         }
 
-        private static List<FileInfo> _modifiedFiles = new List<FileInfo>();
-        public static List<FileInfo> ModifiedFiles { get { return _modifiedFiles; } }
+        private static Dictionary<string, FileInfo> _modifiedFiles = new Dictionary<string, FileInfo>();
+        public static List<FileInfo> ModifiedFiles { get { return _modifiedFiles.Values.ToList(); } }
         private static StringBuilder _sb = new StringBuilder();
 
         internal static void writeModification(string p)
@@ -37,6 +37,16 @@ namespace SoundPurger
                 sw.Close();
             }
             _sb.Clear();
+        }
+
+        internal static void outputFiles()
+        {
+            foreach (var file in _modifiedFiles)
+            {
+                var asset = AssetBuilder.AllAssets[file.Key];
+                asset.writeChanges();
+            }
+            _modifiedFiles.Clear();
         }
     }
 }
