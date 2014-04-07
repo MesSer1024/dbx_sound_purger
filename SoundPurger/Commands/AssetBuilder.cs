@@ -17,6 +17,10 @@ namespace SoundPurger
         public string Name { get; set; }
         public string Type { get; set; }
 
+        private object _fileLock = new object();
+
+        public IReadOnlyCollection<string> FileContent { get; set; }
+
         public List<string> Parents { get; set; }
         public List<string> Children { get; set; }
 
@@ -45,6 +49,16 @@ namespace SoundPurger
                 return false;
             Parents.Add(asset.Guid);
             return true;
+        }
+
+        public void removeLine(int line)
+        {
+
+        }
+
+        public void replaceLine(int line, string content)
+        {
+
         }
     }
 
@@ -137,6 +151,7 @@ namespace SoundPurger
 
                 if (lineNr >= 9)
                     throw new Exception("Foobared!");
+                sr.Close();
             }
 
             return asset;

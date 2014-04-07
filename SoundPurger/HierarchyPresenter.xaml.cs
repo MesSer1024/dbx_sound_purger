@@ -30,6 +30,7 @@ namespace SoundPurger
             _removableFiles = new List<DiceAsset>();
             _items.SelectionChanged += _items_SelectionChanged;
             _items.KeyDown += _items_KeyDown;
+            _items.SelectionMode = SelectionMode.Extended;
         }
 
         void _items_KeyDown(object sender, KeyEventArgs e)
@@ -38,8 +39,20 @@ namespace SoundPurger
             {
                 if (e.IsToggled && e.IsDown && e.Key == Key.Delete)
                 {
-                    var asset = _items.SelectedItem as DiceAsset;
-                    var del = new DeleteReference(asset);
+                    foreach (var item in _items.SelectedItems)
+                    {
+                        if (item is DiceAsset)
+                        {
+                            var asset = item as DiceAsset;
+                            var del = new DeleteReference(asset);
+                        }
+                        else
+                        {
+                            throw new Exception();
+                        }
+                    }
+
+                    AppSettings.writeLogToFileAndClear(new System.IO.FileInfo("./output/foobar.txt"));
                 }
 
             }
@@ -58,7 +71,7 @@ namespace SoundPurger
 
             //identifiersList.ItemsSource = _items.FindAll(a => a.Guid.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
             //_items.ItemsSource = _removableFiles;
-            _subset = _removableFiles.FindAll(a => a.Type == "Audio.SoundPatchConfigurationAsset");
+            _subset = _removableFiles.FindAll(a => a.Type == "Audio.SoundPatchConfigurationAsset" || a.Type == "Audio.SoundPatchAsset" || a.Type == "Audio.SoundWaveAsset");
             _items.ItemsSource = _subset;
         }
 

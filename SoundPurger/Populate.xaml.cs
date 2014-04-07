@@ -48,6 +48,7 @@ namespace SoundPurger
                 var load = JsonConvert.DeserializeObject<SavedData>(s);
                 AppSettings.FilesToRemove = load.RemovableFiles.ToArray();
                 AssetBuilder.AllAssets = load.AllAssets;
+                sr.Close();
             }
 
             MessageManager.sendMessage(new FilesFoundMessage());

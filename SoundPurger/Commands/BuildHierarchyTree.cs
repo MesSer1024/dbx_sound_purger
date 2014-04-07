@@ -173,12 +173,14 @@ namespace SoundPurger.Commands
             {
                 sw.Write(output);
                 sw.Flush();
+                sw.Close();
             }
 
             using (var sw = new StreamWriter("./output/_lastsave.dat", false))
             {
                 sw.Write(output);
                 sw.Flush();
+                sw.Close();
             }
         }
 
