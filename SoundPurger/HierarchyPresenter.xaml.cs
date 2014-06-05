@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +55,13 @@ namespace SoundPurger
 
                     AppSettings.outputFiles();
                     AppSettings.writeLogToFileAndClear(new System.IO.FileInfo("./output/foobar.txt"));
+
+                    foreach (var item in _items.SelectedItems)
+                    {
+                        var file = new FileInfo((item as DiceAsset).FilePath);
+                        file.Delete();
+                    }
+                    _subset.Clear();
                 }
 
             }
@@ -72,13 +80,13 @@ namespace SoundPurger
 
             //identifiersList.ItemsSource = _items.FindAll(a => a.Guid.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
             //_items.ItemsSource = _removableFiles;
-            _subset = _removableFiles.FindAll(a => a.Type == "Audio.SoundPatchConfigurationAsset" /*|| a.Type == "Audio.SoundPatchAsset" || a.Type == "Audio.SoundWaveAsset"*/);
+            _subset = _removableFiles.FindAll(a => a.Type == "Audio.SoundPatchConfigurationAsset" || a.Type == "Audio.SoundPatchAsset" /*|| a.Type == "Audio.SoundWaveAsset"*/);
             _items.ItemsSource = _subset;
         }
 
         void updateSelectedData()
         {
-            bool valid = _items.SelectedItem != null;
+            bool valid = _items.SelectedItem != null && _items.SelectedIndex < _items.Items.Count;
 
             if(valid)
             {

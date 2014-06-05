@@ -11,47 +11,84 @@ namespace SoundPurger.Commands
     {
         public List<FileInfo> Files { get; set; }
 
-        private string _soundFolder = null;
-
-        private DirectoryInfo[] SoundFoldersToRemove;
-
         public PopulateSoundDbxFiles()
         {
-            Files = new List<FileInfo>();
+            List<FileInfo> files = new List<FileInfo>();
 
-            _soundFolder = Path.Combine(AppSettings.RootFolder, @"./Source/Sound");
+            getFilesInSourceSoundFolder(ref files);
+            getFilesInTestFolder(ref files);
+            getFilesInXpFolders(ref files);
+            Files = files;
+        }
 
-            //folders to keep
-                //Core
-                //StreamPools
-                //Test
+        private void getFilesInTestFolder(ref List<FileInfo> files)
+        {
+            var subFolders = new DirectoryInfo[] {
+                new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/Test/xp0/sound")),
+                new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/Test/xp1/sound")),
+                new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/Test/xp2/sound")),
+                new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/Test/xp3/sound")),
+                new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/Test/xp4/sound")),
+            };
 
-            SoundFoldersToRemove = new DirectoryInfo[] {
-                        new DirectoryInfo(Path.Combine(_soundFolder, "BulletCraft")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Bullet_Craft")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "CamShakes")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Character")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Destruction")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Explosions")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "GameSounds")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Levels")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "maoism")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Mixers")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Music")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Objects")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "States")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "UI")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Vehicles")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "VO_Radio_Effects_Waves")),
-                        new DirectoryInfo(Path.Combine(_soundFolder, "Weapons")),
-                    };
-
-            foreach (var dir in SoundFoldersToRemove)
+            foreach (var folder in subFolders)
             {
-                if (!dir.Exists)
+                if (folder.Exists)
+                {
+                    files.AddRange(folder.GetFiles("*.dbx", SearchOption.AllDirectories));
+                }
+            }
+        }
+
+        private void getFilesInXpFolders(ref List<FileInfo> files)
+        {
+            var subFolders = new DirectoryInfo[] {
+            //    new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/xp0/sound")),
+            //    new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/xp1/sound")),
+            //    new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/xp2/sound")),
+            //    new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/xp3/sound")),
+            //    new DirectoryInfo(Path.Combine(AppSettings.RootFolder, @"./Source/xp4/sound")),
+            };
+
+            foreach (var folder in subFolders)
+            {
+                if (folder.Exists)
+                {
+                    files.AddRange(folder.GetFiles("*.dbx", SearchOption.AllDirectories));
+                }
+            }
+        }
+
+        private void getFilesInSourceSoundFolder(ref List<FileInfo> files)
+        {
+            var soundFolder = Path.Combine(AppSettings.RootFolder, @"./Source/Sound");
+
+            var dir = new DirectoryInfo(soundFolder);
+            var subFolders = dir.GetDirectories("*", SearchOption.TopDirectoryOnly);
+            var foldersToKeep = new DirectoryInfo[] {
+                new DirectoryInfo(Path.Combine(soundFolder, "Core")),
+                new DirectoryInfo(Path.Combine(soundFolder, "StreamPools")),
+                new DirectoryInfo(Path.Combine(soundFolder, "VO")),
+                new DirectoryInfo(Path.Combine(soundFolder, "World")),
+            };
+
+            foreach (var folder in subFolders)
+            {
+                if (!folder.Exists)
                     throw new Exception("Unable to find folder...");
 
-                Files.AddRange(dir.GetFiles("*.dbx", SearchOption.AllDirectories));
+                bool valid = true;
+                foreach (var keeper in foldersToKeep)
+                {
+                    if (keeper.FullName == folder.FullName)
+                    {
+                        valid = false;
+                        break;
+                    }
+                }
+
+                if (valid)
+                    files.AddRange(folder.GetFiles("*.dbx", SearchOption.AllDirectories));
             }
         }
     }

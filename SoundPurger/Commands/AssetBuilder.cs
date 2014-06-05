@@ -168,8 +168,23 @@ namespace SoundPurger
                             throw new Exception("foobard");
 
                         //add item to cache
-                        AllAssets.Add(asset.Guid, asset);
-                        AllAssets.Add(asset.FilePath, asset);
+                        try {
+                            AllAssets.Add(asset.Guid, asset);
+                            AllAssets.Add(asset.FilePath, asset);
+                        }
+                        catch(Exception e)
+                        {
+                            Console.WriteLine("Error when trying to add item to Dictionary, this should not happen, why? {2}\n\trelated to guid={0}, file={1}", asset.Guid, asset.FilePath, e.Message);
+                            try { 
+                                //try to overwrite what is there?
+                                AllAssets.Add(asset.FilePath, asset);
+                                AllAssets[asset.Guid] = asset;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+                        }
 
                         //setup xml to "primary instance"
                         while (xml.ReadToFollowing("instance"))

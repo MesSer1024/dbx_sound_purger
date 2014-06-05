@@ -53,14 +53,14 @@ namespace SoundPurger.Commands
         }
 
         /// <summary>
-        /// Not thread safe... need heavy refactoring....
+        /// Not thread safe... (unless item)
         /// </summary>
         /// <param name="guid"></param>
         /// <param name="assets"></param>
         private void deleteGuidFromAssets(string guid, List<DiceAsset> assets)
         {
             var originalAsset = AssetBuilder.AllAssets[guid];
-            var isSoundPatchConfigurationAsset = originalAsset.Type == "Audio.SoundPatchConfigurationAsset";
+            var isSoundPatchAsset = originalAsset.Type == "Audio.SoundPatchConfigurationAsset" || originalAsset.Type == "Audio.SoundPatchAsset";
 
 
 
@@ -79,7 +79,7 @@ namespace SoundPurger.Commands
                         modifyEffectBlueprint(ref lines, guid, asset);
                         break;
                     default:
-                        if (isSoundPatchConfigurationAsset)
+                        if (isSoundPatchAsset)
                             modifySPC_asset(ref lines, guid, asset);
                         else
                             modifyAsset(ref lines, guid, asset);
